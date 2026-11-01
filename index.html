@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="th"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ควิซการบิน</title>
+<style>
+:root{--bg:#eef3f8;--card:#fff;--ink:#14263a;--mut:#5d6f82;--line:#cfdae6;--acc:#1f5fa8;--ok:#1d7a4a;--okb:#e1f4ea;--no:#b3261e;--nob:#fde8e6;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1722;--card:#17222f;--ink:#e8eef5;--mut:#9fb0c1;--line:#2c3b4c;--acc:#6aa8ee;--ok:#5fd394;--okb:#12301f;--no:#ff8a80;--nob:#3a1816}color-scheme:dark}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Sarabun","Noto Sans Thai",system-ui,sans-serif;line-height:1.5}
+main{max-width:640px;margin:0 auto;padding:16px}
+h1{font-size:1.5rem;margin:8px 0 4px}p{color:var(--mut);margin:4px 0 16px}
+.bar{height:6px;background:var(--line);border-radius:3px;margin:12px 0}.bar i{display:block;height:100%;background:var(--acc);border-radius:3px;width:0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px}
+.q{font-size:1.1rem;font-weight:600;margin:0 0 14px}
+.o{display:block;width:100%;text-align:left;font:inherit;color:inherit;background:transparent;border:1.5px solid var(--line);border-radius:8px;padding:12px;margin:8px 0;cursor:pointer}
+.o:focus-visible,.b:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.o.ok{border-color:var(--ok);background:var(--okb)}.o.no{border-color:var(--no);background:var(--nob)}
+.b{font:inherit;background:var(--acc);color:#fff;border:0;border-radius:8px;padding:12px 20px;margin:12px 8px 0 0;cursor:pointer}
+.b.g{background:transparent;color:var(--acc);border:1.5px solid var(--acc)}
+.m{display:flex;justify-content:space-between;color:var(--mut);font-size:.9rem}
+.note{color:var(--mut);font-size:.9rem;margin-top:8px}
+</style></head><body><main>
+<h1>ควิซการบิน</h1><p id="sub"></p>
+<div class="bar"><i id="pb"></i></div>
+<div class="card" id="c"></div>
+</main>
+<script>
+// q|ถูก|ผิด|ผิด|ผิด  (ตัวเลือกถูกอยู่ตัวแรก สลับตอนแสดงผล)
+const D=`สำนักงานใหญ่ของ European Aviation Safety Agency อยู่ที่ใด|Cologne, Germany|Chicago, United State|Barcelona, Spain|Vienna, Austria
+เมื่อเครื่องบินพร้อมร่อนลง Tower จะแจ้งนักบินด้วยประโยคใด|Cleared to land|Push back|Cleared for take off|Stand by
+อำนาจหน้าที่ของผู้ควบคุมอากาศยาน ฯลฯ กล่าวไว้ในพระราชบัญญัติใด|พ.ร.บ.ว่าด้วยความผิดบางประการต่อการเดินอากาศ|พ.ร.บ.การรับขนทางอากาศระหว่างประเทศ|พ.ร.บ.การเดินอากาศ|พ.ร.บ.คุ้มครองแรงงาน
+ท่าอากาศยานสุวรรณภูมิเปิดดำเนินการเมื่อ พ.ศ. ใด (ตามเฉลยในฟอร์ม)|2548|2538|2558|2568
+ข้อใดคือพื้นที่ในส่วนของ Landside|Check-in counter|Taxiway|Ramp|Aircraft stand
+เมื่อเครื่องบินใกล้ถึงรันเวย์ Ground control โอนต่อให้ส่วนงานใด|Local control|Air traffic control|Departure control|Area control
+เมื่อต้องการนำเครื่องบินออกจากสนามบิน นักบินต้องส่งอะไรให้ Air traffic control|แผนการบิน|รายชื่อผู้โดยสาร|รายการคลังสินค้า|แผนผังเครื่องบิน
+ข้อใดไม่ใช่สิ่งสำคัญในการทำความเข้าใจเรื่อง Airside และ Landside|Service|Safety|Efficiency|Passenger experience
+Sterile cockpit สิ้นสุดลงและเริ่มต้นขึ้นเมื่อเครื่องบินอยู่ที่ altitude ใด|10,000 feet|5,000 feet|15,000 feet|20,000 feet
+เครื่องบินเข้าเขตรัศมีกี่ไมล์ทะเลจากสนามบิน จึงถูกส่งต่อให้ Approach Control|50|30|40|60
+ข้อใดไม่ใช่พื้นที่ในส่วนของ Airside|Taxi stand|Runway|Hanger|Apron
+ท่าอากาศยานสุวรรณภูมิตั้งอยู่ที่จังหวัดใด|สมุทรปราการ|กรุงเทพมหานคร|ปทุมธานี|นนทบุรี
+ICAO ย่อมาจากชื่อใด|International Civil Aviation Organization|International Civil Airline Organization|International Civilian Aviation Organization|International Civilian Airline Organization
+อนุสัญญาใดว่าด้วยความผิดและการกระทำอื่น ๆ บางประการที่กระทำบนอากาศยาน|Tokyo convention|Chicago convention|Warsaw convention|Montreal convention
+ข้อใดไม่ใช่วัตถุประสงค์หลักของการควบคุมการจราจรทางอากาศ|เพื่อให้ผู้โดยสารสามารถปฏิบัติตามขั้นตอนของการเดินทางทางอากาศ|เพื่อป้องกันการเกิดอุบัติเหตุระหว่างอากาศยานที่บินอยู่ในอากาศ|เพื่อป้องกันการเกิดอุบัติเหตุระหว่างอากาศยานกับสิ่งกีดขวางภาคพื้น|เพื่อให้การจราจรทางอากาศเป็นไปด้วยความสะดวก รวดเร็ว และปลอดภัย
+HKT เป็น IATA code ของสนามบินใด|Phuket International Airport|Chiang Mai International Airport|Don Mueang International Airport|Krabi International Airport
+หน่วยงานที่กำกับดูแลการบินพลเรือนในประเทศไทยคือ|CAAT|CAAS|CASA|CATA
+สนามบินแห่งแรกของประเทศไทยคือที่ใด|สนามบินสระปทุม|สนามบินดอนเมือง|สนามบินสุวรรณภูมิ|สนามบินอู่ตะเภา
+สายการบินใดคือสายการบินแรกของโลก|KLM Royal Dutch Airlines|Thai Airways|Lufthansa|Pan Am
+บุคคลใดได้รับการยกย่องว่าเป็นบรรพบุรุษของกองทัพอากาศไทย|พลอากาศโทพระยาเฉลิมอากาศ|เจ้าฟ้ากรมหลวงพิษณุโลกประชานาถ|นายพันตรี หลวงศักดิ์ศัลยาวุธ|นายร้อยเอก หลวงอาวุธลิขิกร
+ห้องครัวของเครื่องบินเรียกว่าอะไร|Galley|Exit seat|Cockpit|Slide
+ประเทศไทยมีเวลามาตรฐานโลกหรือ UTC เท่าใด|+ 7|+ 3|+ 5|+ 9
+แรงทั้ง 4 ที่ใช้ในการขับเคลื่อนเครื่องบินได้แก่อะไรบ้าง|Weight, Thrust, Drag, Lift|Height, Thrust, Drag, Lift|Weight, Push, Drag, Lift|Weight, Thrust, Pull, Lift
+Boarding pass ภาษาไทยคืออะไร|บัตรที่นั่ง|ตั๋วเครื่องบิน|ตั๋วเดินทาง|บัตรประจำตัวเดินทาง
+ข้อใดไม่ใช่พนักงานของสายการบิน|Customs|Caterer|Engineer|First officer
+ข้อใดคือสายการบินแบบ Full-service airline|Thai Airways|Thai Lion Air|Thai Air Asia|Thai Vietjet
+ข้อใดคือ ICAO alphabet ของ "Y"|Yankee|Yoyo|Yanker|Yahoo
+ข้อใดไม่ใช่ภูมิศาสตร์กายภาพ|วัฒนธรรม|ภูมิประเทศ|ภูมิอากาศ|ทรัพยากรธรรมชาติ
+สำนักงานใหญ่ของ Boeing อยู่เมืองใดของสหรัฐอเมริกา|Virginia|New York|Los Angeles|Washington DC
+สินค้าที่ต้องได้รับอนุญาตเป็นหนังสือจากส่วนราชการ ต้องแสดงตอนพิธีการศุลกากร คือ|ของต้องกำกัด|ของต้องจำกัด|ของต้องห้าม|ของต้องปฏิเสธ
+C.I.Q. ย่อมาจากข้อใด|Customs, Immigration, Quarantine|Costume, Immigration, Quarantine|Customs, Immigrant, Quarantine|Customs, Immigration, Quarantee
+อุปกรณ์ใดช่วยให้เครื่องบินเคลื่อนที่ไปด้านซ้ายหรือขวา (เอียงปีก)|Aileron|Rudder|Flap|Slat
+ข้อใดไม่ใช่ส่วนของห้องโดยสาร|Cargo compartment|Aisle|Lavatory|Overhead compartment
+ข้อใดไม่ใช่ประเภทของสายการบิน (เดาจากคำตอบที่เหมาะสุด)|Safety|Owner|Time|Flight
+เส้นเมอริเดียนแรก (ลองติจูด 0 องศา) อยู่ที่เมืองใด|Greenwich|Bangkok|Paris|Shanghai
+IATA code ของสายการบิน Bangkok Airways|PG|TG|QR|QF
+ออกเดินทางจากกรุงเทพฯ 07.00 น. บินไปอังกฤษ 14 ชั่วโมง จะถึงเวลาเท่าใด (ไทย UTC+7, อังกฤษ UTC+0)|14.00 น.|12.00 น.|13.00 น.|15.00 น.
+UTC เป็นตัวย่อของคำในข้อใด|Universal Time Coordinated|Uniform Time Coordinated|Universal Time Cooperated|Uniform Time Cooperated
+Departure time หมายถึงอะไร|เวลาที่เครื่องบินออกจากสนามบิน|เวลาที่สายการบินให้ผู้โดยสารขึ้นเครื่อง|เวลาที่พนักงานตรวจเอกสารเดินทาง|เวลาที่ผู้โดยสารออกจากเครื่องบิน
+เครื่องบินรุ่นใหญ่ที่สุดของ Airbus คือรุ่นใด|A380|A320|A330|A350
+กระบวนการขนส่งสินค้าทางอากาศข้อใดถูกต้องที่สุด|Registration, Labelling, Customs clearance at origin, Departure, Delivery|Registration, Customs clearance at origin, Labelling, Departure, Delivery|Labelling, Registration, Customs clearance at origin, Departure, Delivery|Labelling, Registration, Departure, Customs clearance at origin, Delivery
+เมื่อเครื่องบินถึงปลายทางต่างประเทศ ผู้โดยสารต้องไปส่วนงานใดก่อนภายในสนามบิน|Immigration|Baggage claim|Customs|Lost and Found
+อาหารพิเศษที่ไม่มีเนื้อสัตว์ ปลา ไข่ นม และรากของพืชผัก|VJML|VOML|VGML|VLML
+อาหารพิเศษข้อใดไม่ใช่อาหารที่เป็นข้อจำกัดทางศาสนา|NLML|HNML|KSML|MOML
+ข้อใดไม่ใช่ทางเลือกสำหรับการเช็คอินผู้โดยสาร|Gate check-in|Online check-in|Counter check-in|Kiosk check-in
+ความรับผิดชอบที่สำคัญที่สุดของพนักงานภาคพื้นคืออะไร|Safe and secure passengers|Check-in passengers|Board passengers|Special handling passengers
+เจ้าหน้าที่ภาคพื้นที่ถือป้ายสัญญาณ วางที่ห้ามล้อ สื่อสารกับนักบินผ่านหูฟัง คือ|Marshaller|Refueling staff|Ground agent|Engineer
+ป้าย Dangerous goods ที่มีเลข 9 เป็น Dangerous good ประเภทใด|Miscellaneous goods|Toxic & infectious substances|Radioactive material|Organic peroxides
+ของเหลวที่อนุญาตสำหรับ Carry-on baggage มีปริมาณเท่าใด|100 ml per items, total of 1 liter|200 ml per items, total of 1 liter|100 ml per items, total of 2 liters|200 ml per items, total of 2 liters
+สินค้าที่มีข้อจำกัดด้านระยะเวลาหมดอายุ เน่าเสียง่าย ต้องจัดส่งอย่างเหมาะสม|Perishable cargo|Valuable cargo|Special cargo|Temperature controlled cargo
+ข้อใดคือ Airline lounge|Royal Orchid Lounge|Bangkok Airport Lounge|Miracle Lounge|King Power Lounge
+สิ่งของใดที่ต้องใส่ไว้ใน Check-in baggage เท่านั้น|Sharp object|Baby milk|Lighter|Electronic device
+ป้าย Dangerous goods สีแดงมีรูปเปลวไฟและเลข 3 คือประเภทใด|Flammable liquid|Flammable solids|Explosives|Corrosives
+งานใดที่ไม่จัดเป็นงานในส่วนของพนักงานภาคพื้น|Pilot|Lounge|Ramp|Catering
+ขั้นตอนการ Check-in ข้อใดถูกต้องที่สุด|Check-in, Baggage check-in, Security, Immigration, Boarding gate|Check-in, Security, Immigration, Boarding gate, Baggage check-in|Check-in, Immigration, Baggage check-in, Security, Boarding gate|Check-in, Baggage check-in, Security, Boarding gate, Immigration
+ใครมีบทบาทจัดเตรียมสิ่งของจากผู้ขายและนำส่งเพื่อจัดเก็บบนเครื่องบิน|Caterer|Distributor|Passenger|Supplier
+ข้อใดไม่ได้รวมอยู่ในการบริการของ Ramp|Cabin cleaning|Fire truck|Baggage handling|Ground support equipment maintenance
+THML หมายถึงอาหารพิเศษในข้อใด|Thai Style Meal|Oriental Style Meal|Asean Style Meal|Traditional Style Meal
+ข้อใดคือบทบาทของสายการบินในกระบวนการของครัวการบิน (Catering)|จัดหาผลิตภัณฑ์ตามสัญญา|รวบรวมและจัดเก็บถาดอาหารและรถเข็น|นำส่งวัตถุดิบที่ได้รับมาจากผู้ขาย|ออกแบบการบริการบนเครื่องบิน
+ขั้นตอนแรกของครัวการบินในการจัดเตรียมอาหารสำหรับบริการบนเครื่องบินคือ|Menu planning|Assembling|Dispatch|Ordering raw material
+รถเข็นในภาพ (ฝาบนมีช่องเปิด สีน้ำเงิน) มีวัตถุประสงค์ใด [เพิ่มตัวเลือก 2 ข้อ]|เก็บขยะ|บริการอาหารร้อน|บริการเครื่องดื่มและขายสินค้า|เก็บอุปกรณ์ฉุกเฉิน
+ข้อใดคือลำดับการรับประทานอาหารที่ถูกต้อง|Appetizer, Soup, Main course, Cheese, Dessert|Soup, Appetizer, Main course, Dessert Cheese|Soup, Appetizer, Cheese, Main course, Dessert|Appetizer, Soup, Main course, Dessert, Cheese
+ในช่องใส่ของหลังที่นั่ง (Seat pocket) สิ่งใดที่ไม่นับว่าเป็น Inflight entertainment|Air sickness bag|Duty free magazine|Airline magazine|Safety card
+แก้ว Tumbler (แก้วทรงสั้นใส) ใช้สำหรับสิ่งใด|Soft drink|Ice cream|Wine|Coffee
+หากมีสุนัขขึ้นเครื่องบินมาพร้อมผู้โดยสาร สุนัขต้องนั่งอยู่ที่บริเวณใด|บนพื้นด้านหน้าผู้โดยสาร|บนที่นั่งผู้โดยสาร|ใต้ที่นั่งผู้โดยสาร|บนทางเดินระหว่างที่นั่ง
+ข้อใดสำคัญที่สุดในทักษะการสื่อสาร|Body language|Tone of voice|Verbal|Alphabet
+อุปกรณ์ในภาพ (กล่องโลหะในครัวการบิน) คืออะไร|Atlas box|Metal box|Metal container|Atlas container
+เอกสารใดที่ไม่ใช่เอกสารจำเป็นในการปฏิบัติงานของพนักงานต้อนรับบนเครื่องบิน|ทะเบียนบ้าน|พาสปอร์ต|บัตรลูกเรือ|ใบรับรองแพทย์
+ข้อใดที่ไม่ได้มีไว้สำหรับบริการผู้โดยสารชั้นประหยัด|Mattress|Blanket|Pillow|Amenity kit
+หน้าที่ที่สำคัญที่สุดของพนักงานต้อนรับบนเครื่องบินคือ|รับผิดชอบต่อความปลอดภัยของผู้โดยสาร|การประชุมก่อนขึ้นเครื่องบิน|ปฏิเสธผู้โดยสารที่เมา|ออกคำสั่งเมื่อมีเหตุฉุกเฉิน
+ข้อใดคือเครื่องดื่มแบบไม่มีแอลกอฮอล์|Mocktail|Aperitif|Liqueur|Beer
+ข้อใดเป็นฐานของปิรามิดเรื่องจิตวิทยาการบริการ|Identify customers|Deliver emotion|Answer quickly|Answer every enquiry
+หากผู้โดยสารถูกปฏิเสธให้เข้าประเทศปลายทาง จะเดินทางกลับในฐานะผู้โดยสารพิเศษประเภทใด|INAD|DEPU|DEPA|CIP
+ผู้โดยสารที่ต้องใช้รถเข็นจัดอยู่ในประเภทที่ไม่สามารถเคลื่อนที่ได้ด้วยตนเอง|WCHC|WCHR|WCHS|WCHE
+ข้อใดไม่รวมอยู่ใน 3-in-1 pack|Salt & Pepper sachet|Paper napkin|Stirrer|Sugar tube
+Task prioritize ข้อใดเป็นสิ่งที่ต้องทำเป็นอันดับแรก|Important and urgent|Important, but not urgent|Not urgent or important|Urgent, but not important
+ข้อใดไม่รวมอยู่ใน 7-in-1 cutlery pack|Stirrer|Salt & Pepper sachet|Toothpick|Disposable dessertspoon
+เทคนิค LAST ย่อมาจากข้อใด|Listen, Apologize, Solution, Thank them|Listen, Appreciation, Solution, Thank them|Listen, Apologize, Salutation, Thank them|Logical thinking, Apologize, Solution, Thank them
+ข้อใดที่ไม่ใช่เครื่องดื่มประเภท Liquor|Bailey|Whiskey|Vodka|Gin
+LEVEL 2 ของ Unruly passenger คืออะไร|Written warning|Passenger announcement warning|Security escort on ground|Verbal warning`;
+const Q=D.split("\n").map(l=>{const p=l.split("|");return{q:p[0],c:p[1],o:p.slice(1)}});
+const $=id=>document.getElementById(id);
+let ord,i,sc,wrong;
+function sh(a){a=a.slice();for(let k=a.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1));[a[k],a[j]]=[a[j],a[k]]}return a}
+function start(list){ord=sh(list);i=0;sc=0;wrong=[];show()}
+function show(){
+ if(i>=ord.length)return done();
+ const x=ord[i];$("pb").style.width=(i/ord.length*100)+"%";
+ $("sub").textContent=Q.length+" ข้อ จากข้อสอบ 2 ชุด สลับข้อและตัวเลือกทุกรอบ";
+ const o=sh(x.o);
+ $("c").innerHTML=`<div class="m"><span>ข้อ ${i+1}/${ord.length}</span><span>คะแนน ${sc}</span></div><p class="q"></p><div id="os"></div><div id="fb"></div>`;
+ $("c").querySelector(".q").textContent=x.q;
+ o.forEach(t=>{const b=document.createElement("button");b.className="o";b.textContent=t;b.onclick=()=>pick(b,t,x);$("os").appendChild(b)})
+}
+function pick(b,t,x){
+ const bs=[...document.querySelectorAll(".o")];bs.forEach(e=>{e.disabled=true;if(e.textContent===x.c)e.classList.add("ok")});
+ if(t===x.c)sc++;else{b.classList.add("no");wrong.push(x)}
+ $("fb").innerHTML='<button class="b" id="nx">ข้อถัดไป</button>';$("nx").focus();$("nx").onclick=()=>{i++;show()}
+}
+function done(){
+ $("pb").style.width="100%";
+ $("c").innerHTML=`<p class="q">ได้ ${sc}/${ord.length} คะแนน</p><button class="b" id="a">เล่นใหม่ทั้งหมด</button>${wrong.length?'<button class="b g" id="w">ทำซ้ำเฉพาะข้อที่ผิด ('+wrong.length+')</button>':""}`;
+ $("a").onclick=()=>start(Q);if(wrong.length)$("w").onclick=()=>start(wrong)
+}
+start(Q);
+</script></body></html>
